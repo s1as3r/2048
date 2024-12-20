@@ -91,6 +91,10 @@ local function spawnCell()
 end
 
 function love.keypressed(key)
+    if key == "f" then
+        love.window.setFullscreen(not love.window.getFullscreen())
+    end
+
     if GAME_STATE.over then return end
 
     if key == "right" then
@@ -126,7 +130,7 @@ function love.draw()
         local width, height = love.graphics.getDimensions()
         local w_2, h_2 = math.floor(width / 2), math.floor(height / 2)
         love.graphics.clear()
-        love.graphics.print(string.format("Game Over! Score: %d", GAME_STATE.score), w_2, h_2)
+        love.graphics.printf(string.format("Game Over! Score: %d", GAME_STATE.score), 0, h_2, w_2, "center", 0, 2)
         return
     end
 
