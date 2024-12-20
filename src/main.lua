@@ -93,10 +93,13 @@ end
 function love.keypressed(key)
     if key == "f" then
         love.window.setFullscreen(not love.window.getFullscreen())
+    elseif key == "q" then
+        love.event.quit()
+    elseif key == "/" then
+        GAME_STATE.show_help = not GAME_STATE.show_help
     end
 
-    if GAME_STATE.over then return end
-
+    if GAME_STATE.over or GAME_STATE.show_help then return end
     if key == "right" then
         GAME_STATE.score = GAME_STATE.score + cmove.moveRight(GAME_STATE.cells)
     elseif key == "left" then
@@ -114,10 +117,12 @@ end
 
 function love.load()
     math.randomseed(os.time())
+    love.graphics.setNewFont("data/font/Fruktur-Regular.ttf")
     START_SCORE_CHOICES = { 2, 4 }
     ROWS = 4
     COLS = 4
     GAME_STATE = {
+        show_help = false,
         score = 0,
         over = false,
         cells = initialCells(ROWS, COLS)
@@ -125,7 +130,23 @@ function love.load()
     spawnCell()
 end
 
+local function drawHelp()
+    local width, height = love.graphics.getDimensions()
+    local w_2, h_2 = math.floor(width / 2), math.floor(height / 2)
+    local help_string = "Arrow Keys: Move Cells\n"
+        .. "f: Toggle FullScreen\n"
+        .. "q: Quit"
+
+    local f_height = love.graphics.getFont():getHeight()
+    love.graphics.printf(help_string, 0, h_2 - 2.5 * f_height, w_2, "center", 0, 2)
+end
+
 function love.draw()
+    if GAME_STATE.show_help then
+        drawHelp()
+        return
+    end
+
     if GAME_STATE.over then
         local width, height = love.graphics.getDimensions()
         local w_2, h_2 = math.floor(width / 2), math.floor(height / 2)
@@ -133,6 +154,7 @@ function love.draw()
         love.graphics.printf(string.format("Game Over! Score: %d", GAME_STATE.score), 0, h_2, w_2, "center", 0, 2)
         return
     end
+
 
     drawBoard()
     drawCells()
