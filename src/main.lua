@@ -45,13 +45,14 @@ local function drawCells()
     local x_4 = math.floor(width / COLS)
     local y_4 = math.floor(height / ROWS)
 
-    local offset_x = math.floor(x_4 / 2);
-    local offset_y = math.floor(y_4 / 2);
+
+    local offset_x = math.floor(x_4 / 2) - F_WIDTH / 2
+    local offset_y = math.floor(y_4 / 2) - F_HEIGHT / 2
 
     for i, row in ipairs(GAME_STATE.cells) do
         for j, value in ipairs(row) do
             if value ~= 0 then
-                love.graphics.print(value, offset_x + (j - 1) * x_4, offset_y + (i - 1) * y_4)
+                love.graphics.print(value, offset_x + (j - 1) * x_4, offset_y + (i - 1) * y_4, 0, 2, 2)
             end
         end
     end
@@ -118,6 +119,8 @@ end
 function love.load()
     math.randomseed(os.time())
     love.graphics.setNewFont("data/font/Fruktur-Regular.ttf")
+    F_HEIGHT = love.graphics.getFont():getHeight()
+    F_WIDTH = love.graphics.getFont():getWidth("4")
     START_SCORE_CHOICES = { 2, 4 }
     ROWS = 4
     COLS = 4
@@ -137,8 +140,7 @@ local function drawHelp()
         .. "f: Toggle FullScreen\n"
         .. "q: Quit"
 
-    local f_height = love.graphics.getFont():getHeight()
-    love.graphics.printf(help_string, 0, h_2 - 2.5 * f_height, w_2, "center", 0, 2)
+    love.graphics.printf(help_string, 0, h_2 - 2.5 * F_HEIGHT, w_2, "center", 0, 2)
 end
 
 function love.draw()
