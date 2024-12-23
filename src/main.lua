@@ -46,12 +46,14 @@ local function drawCells()
     local y_4 = math.floor(height / ROWS)
 
 
-    local offset_x = math.floor(x_4 / 2) - F_WIDTH / 2
+    local offset_x_base = math.floor(x_4 / 2)
+    local offset_x
     local offset_y = math.floor(y_4 / 2) - F_HEIGHT / 2
 
     for i, row in ipairs(GAME_STATE.cells) do
         for j, value in ipairs(row) do
             if value ~= 0 then
+                offset_x = offset_x_base - (string.len(tostring(value)) * F_WIDTH / 2)
                 love.graphics.printf(value, (j - 1) * x_4, offset_y + (i - 1) * y_4, offset_x, "center", 0, 2)
             end
         end
@@ -119,8 +121,11 @@ end
 function love.load()
     math.randomseed(os.time())
     love.graphics.setNewFont("data/font/Fruktur-Regular.ttf")
-    F_HEIGHT = love.graphics.getFont():getHeight()
-    F_WIDTH = love.graphics.getFont():getWidth("4")
+    F_HEIGHT     = love.graphics.getFont():getHeight()
+    F_WIDTH      = love.graphics.getFont():getWidth("4")
+
+    COLOR_SHADER = love.graphics.newShader("data/shaders/color.shader")
+    love.graphics.setShader(COLOR_SHADER)
 
     love.window.setTitle("2048")
     START_SCORE_CHOICES = { 2, 4 }
@@ -148,9 +153,12 @@ end
 
 function love.draw()
     if GAME_STATE.show_help then
+        COLOR_SHADER:send("scale", { 0, 0, 1, 1 })
         drawHelp()
         return
     end
+
+    COLOR_SHADER:send("scale", { 0, 1, 0, math.cos(love.timer.getTime()) * 0.5 + 0.5 })
 
     if GAME_STATE.over then
         local width, height = love.graphics.getDimensions()
