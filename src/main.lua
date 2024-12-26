@@ -1,20 +1,9 @@
 local cmove = require("cell_moves")
+local util = require("util")
 
-local function initialCells(rows, cols)
-    local cells = {}
-    for _ = 1, rows do
-        local row = {}
-        for _ = 1, cols do
-            table.insert(row, 0)
-        end
-        table.insert(cells, row)
-    end
-
-    return cells
-end
 
 local function getCellsCopy()
-    local cells = initialCells(ROWS, COLS)
+    local cells = util.initialCells(ROWS, COLS)
     for i = 1, ROWS do
         for j = 1, COLS do
             cells[i][j] = GAME_STATE.cells[i][j]
@@ -47,9 +36,9 @@ local function drawCells()
 
 
     local offset_x_base = math.floor(x_4 / 2)
-    local offset_x
     local offset_y = math.floor(y_4 / 2) - F_HEIGHT / 2
 
+    local offset_x
     for i, row in ipairs(GAME_STATE.cells) do
         for j, value in ipairs(row) do
             if value ~= 0 then
@@ -98,11 +87,13 @@ function love.keypressed(key)
         love.window.setFullscreen(not love.window.getFullscreen())
     elseif key == "q" then
         love.event.quit()
+    elseif key == "." then
+        GAME_STATE.show_settings = not GAME_STATE.show_settings
     elseif key == "/" then
         GAME_STATE.show_help = not GAME_STATE.show_help
     end
 
-    if GAME_STATE.over or GAME_STATE.show_help then return end
+    if GAME_STATE.over or GAME_STATE.show_help or GAME_STATE.show_settings then return end
     if key == "right" then
         GAME_STATE.score = GAME_STATE.score + cmove.moveRight(GAME_STATE.cells)
     elseif key == "left" then
@@ -123,46 +114,88 @@ function love.load()
     love.graphics.setNewFont("data/font/Fruktur-Regular.ttf")
     F_HEIGHT     = love.graphics.getFont():getHeight()
     F_WIDTH      = love.graphics.getFont():getWidth("4")
-
     COLOR_SHADER = love.graphics.newShader("data/shaders/color.shader")
     love.graphics.setShader(COLOR_SHADER)
+    COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
 
     love.window.setTitle("2048")
-    START_SCORE_CHOICES = { 2, 4 }
+    START_SCORE_CHOICES = { 2, 2, 2, 4 }
     ROWS = 4
     COLS = 4
+    SETTINGS = {
+        use_shader = false,
+    }
+    BUTTON_COORDS = {
+        use_shader = { x = 0, y = 0, w = 0, h = 0 }
+    }
     GAME_STATE = {
+        show_settings = false,
         show_help = false,
         score = 0,
         over = false,
-        cells = initialCells(ROWS, COLS)
+        cells = util.initialCells(ROWS, COLS)
     }
     spawnCell()
 end
 
 local function drawHelp()
-    local width, height = love.graphics.getDimensions()
-    local w_2, h_2 = math.floor(width / 2), math.floor(height / 2)
+    COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
+    local w_2, h_2 = util.getCenter()
     local help_string = "Arrow Keys: Move Cells\n"
         .. "f: Toggle Full-Screen\n"
         .. "/: Toggle Help Screen\n"
+        .. ".: Settings\n"
         .. "q: Quit"
 
-    love.graphics.printf(help_string, 0, h_2 - 3 * F_HEIGHT, w_2, "center", 0, 2)
+    local offset_y = util.countChars(help_string, "\n") + 2
+    love.graphics.printf(help_string, 0, h_2 - (offset_y / 2) * F_HEIGHT, w_2, "center", 0, 2)
+end
+
+local function drawSettings()
+    COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
+    local w_2, h_2 = util.getCenter()
+    local w_pad, h_pad = 4, 2
+    local buttonText;
+    if SETTINGS.use_shader then
+        buttonText = "Disable Shader"
+    else
+        buttonText = "Enable Shader"
+    end
+
+    local rectWidth = love.graphics.getFont():getWidth(buttonText) + w_pad * 2
+    local rectHeight = F_HEIGHT + h_pad * 2;
+    local rect_x, rect_y = w_2 - (rectWidth / 2), h_2 - (rectHeight / 2)
+    love.graphics.rectangle("line", rect_x, rect_y, rectWidth, rectHeight)
+    love.graphics.print(buttonText, w_2 - (rectWidth / 2) + w_pad, h_2 - (rectHeight / 2) + h_pad)
+
+    BUTTON_COORDS.use_shader = { x = rect_x, y = rect_y, w = rectWidth, h = rectHeight }
+end
+
+function love.mousepressed(x, y, button)
+    if button ~= 1 then return end
+
+    if GAME_STATE.show_settings and util.isInRect(x, y, BUTTON_COORDS.use_shader) then
+        SETTINGS.use_shader = not SETTINGS.use_shader
+    end
 end
 
 function love.draw()
     if GAME_STATE.show_help then
-        COLOR_SHADER:send("scale", { 0, 0, 1, 1 })
         drawHelp()
         return
     end
 
-    COLOR_SHADER:send("scale", { 0, 1, 0, math.cos(love.timer.getTime()) * 0.5 + 0.5 })
+    if GAME_STATE.show_settings then
+        drawSettings()
+        return
+    end
+
+    if SETTINGS.use_shader then
+        COLOR_SHADER:send("scale", { 0, 1, 0, math.cos(love.timer.getTime()) * 0.5 + 0.5 })
+    end
 
     if GAME_STATE.over then
-        local width, height = love.graphics.getDimensions()
-        local w_2, h_2 = math.floor(width / 2), math.floor(height / 2)
+        local w_2, h_2 = util.getCenter()
         love.graphics.clear()
         love.graphics.printf(string.format("Game Over! Score: %d", GAME_STATE.score), 0, h_2, w_2, "center", 0, 2)
         return
