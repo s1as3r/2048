@@ -15,9 +15,9 @@ function util.getCenter()
 end
 
 function util.isInRect(x, y, rect)
-    local x_within = x > rect.x and x < (rect.x + rect.w)
-    local y_within = y > rect.y and y < (rect.y + rect.h)
-    return x_within and y_within
+    local xWithin = x > rect.x and x < (rect.x + rect.w)
+    local yWithin = y > rect.y and y < (rect.y + rect.h)
+    return xWithin and yWithin
 end
 
 function util.initialCells(rows, cols)

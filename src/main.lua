@@ -15,35 +15,35 @@ end
 
 local function drawBoard()
     local width, height = love.graphics.getDimensions()
-    local x_4 = math.floor(width / COLS)
-    local y_4 = math.floor(height / ROWS)
+    local x4 = math.floor(width / COLS)
+    local y4 = math.floor(height / ROWS)
 
     love.graphics.rectangle("line", 0, 0, width, height)
 
     for i = 1, ROWS do
-        love.graphics.line(0, i * y_4, width, i * y_4);
+        love.graphics.line(0, i * y4, width, i * y4);
     end
 
     for i = 1, COLS do
-        love.graphics.line(i * x_4, 0, i * x_4, height);
+        love.graphics.line(i * x4, 0, i * x4, height);
     end
 end
 
 local function drawCells()
     local width, height = love.graphics.getDimensions()
-    local x_4 = math.floor(width / COLS)
-    local y_4 = math.floor(height / ROWS)
+    local x4 = math.floor(width / COLS)
+    local y4 = math.floor(height / ROWS)
 
 
-    local offset_x_base = math.floor(x_4 / 2)
-    local offset_y = math.floor(y_4 / 2) - F_HEIGHT / 2
+    local offsetXBase = math.floor(x4 / 2)
+    local offsetY = math.floor(y4 / 2) - F_HEIGHT / 2
 
-    local offset_x
+    local offsetX
     for i, row in ipairs(GAME_STATE.cells) do
         for j, value in ipairs(row) do
             if value ~= 0 then
-                offset_x = offset_x_base - (string.len(tostring(value)) * F_WIDTH / 2)
-                love.graphics.printf(value, (j - 1) * x_4, offset_y + (i - 1) * y_4, offset_x, "center", 0, 2)
+                offsetX = offsetXBase - (string.len(tostring(value)) * F_WIDTH / 2)
+                love.graphics.printf(value, (j - 1) * x4, offsetY + (i - 1) * y4, offsetX, "center", 0, 2)
             end
         end
     end
@@ -88,12 +88,12 @@ function love.keypressed(key)
     elseif key == "q" then
         love.event.quit()
     elseif key == "." then
-        GAME_STATE.show_settings = not GAME_STATE.show_settings
+        GAME_STATE.showSettings = not GAME_STATE.showSettings
     elseif key == "/" then
-        GAME_STATE.show_help = not GAME_STATE.show_help
+        GAME_STATE.showHelp = not GAME_STATE.showHelp
     end
 
-    if GAME_STATE.over or GAME_STATE.show_help or GAME_STATE.show_settings then return end
+    if GAME_STATE.over or GAME_STATE.showHelp or GAME_STATE.showSettings then return end
     if key == "right" then
         GAME_STATE.score = GAME_STATE.score + cmove.moveRight(GAME_STATE.cells)
     elseif key == "left" then
@@ -123,14 +123,14 @@ function love.load()
     ROWS = 4
     COLS = 4
     SETTINGS = {
-        use_shader = false,
+        useShader = false,
     }
     BUTTON_COORDS = {
-        use_shader = { x = 0, y = 0, w = 0, h = 0 }
+        useShader = { x = 0, y = 0, w = 0, h = 0 }
     }
     GAME_STATE = {
-        show_settings = false,
-        show_help = false,
+        showSettings = false,
+        showHelp = false,
         score = 0,
         over = false,
         cells = util.initialCells(ROWS, COLS)
@@ -140,64 +140,64 @@ end
 
 local function drawHelp()
     COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
-    local w_2, h_2 = util.getCenter()
-    local help_string = "Arrow Keys: Move Cells\n"
+    local w2, h2 = util.getCenter()
+    local helpString = "Arrow Keys: Move Cells\n"
         .. "f: Toggle Full-Screen\n"
         .. "/: Toggle Help Screen\n"
         .. ".: Settings\n"
         .. "q: Quit"
 
-    local offset_y = util.countChars(help_string, "\n") + 2
-    love.graphics.printf(help_string, 0, h_2 - (offset_y / 2) * F_HEIGHT, w_2, "center", 0, 2)
+    local offsetY = util.countChars(helpString, "\n") + 2
+    love.graphics.printf(helpString, 0, h2 - (offsetY / 2) * F_HEIGHT, w2, "center", 0, 2)
 end
 
 local function drawSettings()
     COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
-    local w_2, h_2 = util.getCenter()
-    local w_pad, h_pad = 4, 2
+    local w2, h2 = util.getCenter()
+    local wPad, hPad = 4, 2
     local buttonText;
-    if SETTINGS.use_shader then
+    if SETTINGS.useShader then
         buttonText = "Disable Shader"
     else
         buttonText = "Enable Shader"
     end
 
-    local rectWidth = love.graphics.getFont():getWidth(buttonText) + w_pad * 2
-    local rectHeight = F_HEIGHT + h_pad * 2;
-    local rect_x, rect_y = w_2 - (rectWidth / 2), h_2 - (rectHeight / 2)
-    love.graphics.rectangle("line", rect_x, rect_y, rectWidth, rectHeight)
-    love.graphics.print(buttonText, w_2 - (rectWidth / 2) + w_pad, h_2 - (rectHeight / 2) + h_pad)
+    local rectWidth = love.graphics.getFont():getWidth(buttonText) + wPad * 2
+    local rectHeight = F_HEIGHT + hPad * 2;
+    local rectX, rectY = w2 - (rectWidth / 2), h2 - (rectHeight / 2)
+    love.graphics.rectangle("line", rectX, rectY, rectWidth, rectHeight)
+    love.graphics.print(buttonText, w2 - (rectWidth / 2) + wPad, h2 - (rectHeight / 2) + hPad)
 
-    BUTTON_COORDS.use_shader = { x = rect_x, y = rect_y, w = rectWidth, h = rectHeight }
+    BUTTON_COORDS.useShader = { x = rectX, y = rectY, w = rectWidth, h = rectHeight }
 end
 
 function love.mousepressed(x, y, button)
     if button ~= 1 then return end
 
-    if GAME_STATE.show_settings and util.isInRect(x, y, BUTTON_COORDS.use_shader) then
-        SETTINGS.use_shader = not SETTINGS.use_shader
+    if GAME_STATE.showSettings and util.isInRect(x, y, BUTTON_COORDS.useShader) then
+        SETTINGS.useShader = not SETTINGS.useShader
     end
 end
 
 function love.draw()
-    if GAME_STATE.show_help then
+    if GAME_STATE.showHelp then
         drawHelp()
         return
     end
 
-    if GAME_STATE.show_settings then
+    if GAME_STATE.showSettings then
         drawSettings()
         return
     end
 
-    if SETTINGS.use_shader then
+    if SETTINGS.useShader then
         COLOR_SHADER:send("scale", { 0, 1, 0, math.cos(love.timer.getTime()) * 0.5 + 0.5 })
     end
 
     if GAME_STATE.over then
-        local w_2, h_2 = util.getCenter()
+        local w2, h2 = util.getCenter()
         love.graphics.clear()
-        love.graphics.printf(string.format("Game Over! Score: %d", GAME_STATE.score), 0, h_2, w_2, "center", 0, 2)
+        love.graphics.printf(string.format("Game Over! Score: %d", GAME_STATE.score), 0, h2, w2, "center", 0, 2)
         return
     end
 
