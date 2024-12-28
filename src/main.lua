@@ -179,6 +179,12 @@ function love.mousepressed(x, y, button)
     end
 end
 
+function love.update()
+    if SETTINGS.useShader then
+        COLOR_SHADER:send("scale", { 0, 1, 0, math.cos(love.timer.getTime()) * 0.5 + 0.5 })
+    end
+end
+
 function love.draw()
     if GAME_STATE.showHelp then
         drawHelp()
@@ -188,10 +194,6 @@ function love.draw()
     if GAME_STATE.showSettings then
         drawSettings()
         return
-    end
-
-    if SETTINGS.useShader then
-        COLOR_SHADER:send("scale", { 0, 1, 0, math.cos(love.timer.getTime()) * 0.5 + 0.5 })
     end
 
     if GAME_STATE.over then
