@@ -136,14 +136,16 @@ function love.keypressed(key)
 end
 
 function love.load()
-    math.randomseed(os.time())
+    love.window.setTitle("2048")
     love.graphics.setNewFont("data/font/Fruktur-Regular.ttf")
     F_HEIGHT     = love.graphics.getFont():getHeight()
     COLOR_SHADER = love.graphics.newShader("data/shaders/color.shader")
+
+    math.randomseed(os.time())
+
     love.graphics.setShader(COLOR_SHADER)
     COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
 
-    love.window.setTitle("2048")
     SCORE_SCREEN_FRAC = .05
     START_SCORE_CHOICES = { 2, 2, 2, 4 }
     ROWS = 4
@@ -161,6 +163,7 @@ function love.load()
         over = false,
         cells = util.initialCells(ROWS, COLS)
     }
+
     spawnCell()
 end
 
@@ -209,7 +212,7 @@ end
 
 function love.update()
     if SETTINGS.useShader then
-        COLOR_SHADER:send("scale", { 0, 1, 0, math.cos(love.timer.getTime()) * 0.5 + 0.5 })
+        COLOR_SHADER:send("scale", { 0, 1, 1, math.cos(love.timer.getTime()) * 0.5 + 0.5 })
     end
 end
 
