@@ -82,7 +82,18 @@ local function spawnCell()
     GAME_STATE.cells[i][j] = START_SCORE_CHOICES[math.random(#START_SCORE_CHOICES)]
 end
 
+local function restartGame()
+    GAME_STATE.score = 0
+    GAME_STATE.cells = util.initialCells(ROWS, COLS)
+    GAME_STATE.over = false
+    GAME_STATE.showSettings = false
+    GAME_STATE.showHelp = false
+
+    spawnCell()
+end
+
 function love.keypressed(key)
+    -- general keymaps
     if key == "f" then
         love.window.setFullscreen(not love.window.getFullscreen())
     elseif key == "q" then
@@ -91,8 +102,11 @@ function love.keypressed(key)
         GAME_STATE.showSettings = not GAME_STATE.showSettings
     elseif key == "/" then
         GAME_STATE.showHelp = not GAME_STATE.showHelp
+    elseif key == "r" then
+        restartGame()
     end
 
+    -- game control keymaps
     if GAME_STATE.over or GAME_STATE.showHelp or GAME_STATE.showSettings then return end
     if key == "right" then
         GAME_STATE.score = GAME_STATE.score + cmove.moveRight(GAME_STATE.cells)
@@ -145,6 +159,7 @@ local function drawHelp()
         .. "f: Toggle Full-Screen\n"
         .. "/: Toggle Help Screen\n"
         .. ".: Settings\n"
+        .. "r: Restart\n"
         .. "q: Quit"
 
     local offsetY = util.countChars(helpString, "\n") + 2
