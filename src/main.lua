@@ -43,8 +43,8 @@ local function drawCells()
     for i, row in ipairs(GAME_STATE.cells) do
         for j, value in ipairs(row) do
             if value ~= 0 then
-                offsetX = offsetXBase - (string.len(tostring(value)) * F_WIDTH / 2)
-                love.graphics.printf(value, (j - 1) * x4, offsetY + (i - 1) * y4, offsetX, "center", 0, 2)
+                offsetX = offsetXBase - (love.graphics.getFont():getWidth(tostring(value)))
+                love.graphics.print(value, ((j - 1) * x4) + offsetX, ((i - 1) * y4) + offsetY, 0, 2)
             end
         end
     end
@@ -139,7 +139,6 @@ function love.load()
     math.randomseed(os.time())
     love.graphics.setNewFont("data/font/Fruktur-Regular.ttf")
     F_HEIGHT     = love.graphics.getFont():getHeight()
-    F_WIDTH      = love.graphics.getFont():getWidth("4")
     COLOR_SHADER = love.graphics.newShader("data/shaders/color.shader")
     love.graphics.setShader(COLOR_SHADER)
     COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
@@ -175,14 +174,15 @@ local function drawHelp()
         .. "r: Restart\n"
         .. "q: Quit"
 
-    local offsetY = util.countChars(helpString, "\n") + 2
-    love.graphics.printf(helpString, 0, h2 - (offsetY / 2) * F_HEIGHT, w2, "center", 0, 2)
+    local offsetY = F_HEIGHT * util.countChars(helpString, "\n") + 2
+    local offsetX = love.graphics.getFont():getWidth(helpString)
+    love.graphics.print(helpString, w2 - offsetX, h2 - offsetY, 0, 2)
 end
 
 local function drawSettings()
     COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
     local w2, h2 = util.getCenter()
-    local wPad, hPad = 4, 2
+    local wPad, hPad = 8, 4
     local buttonText;
     if SETTINGS.useShader then
         buttonText = "Disable Shader"
@@ -190,11 +190,11 @@ local function drawSettings()
         buttonText = "Enable Shader"
     end
 
-    local rectWidth = love.graphics.getFont():getWidth(buttonText) + wPad * 2
-    local rectHeight = F_HEIGHT + hPad * 2;
+    local rectWidth = 2 * (love.graphics.getFont():getWidth(buttonText) + wPad)
+    local rectHeight = 2 * (F_HEIGHT + hPad)
     local rectX, rectY = w2 - (rectWidth / 2), h2 - (rectHeight / 2)
     love.graphics.rectangle("line", rectX, rectY, rectWidth, rectHeight)
-    love.graphics.print(buttonText, w2 - (rectWidth / 2) + wPad, h2 - (rectHeight / 2) + hPad)
+    love.graphics.print(buttonText, w2 - (rectWidth / 2) + wPad, h2 - (rectHeight / 2) + hPad, 0, 2)
 
     BUTTON_COORDS.useShader = { x = rectX, y = rectY, w = rectWidth, h = rectHeight }
 end
@@ -227,7 +227,9 @@ function love.draw()
     if GAME_STATE.over then
         local w2, h2 = util.getCenter()
         love.graphics.clear()
-        love.graphics.printf(string.format("Game Over! Score: %d", GAME_STATE.score), 0, h2, w2, "center", 0, 2)
+
+        local gameOverString = string.format("Game Over! Score: %d", GAME_STATE.score)
+        love.graphics.print(gameOverString, w2 - love.graphics.getFont():getWidth(gameOverString), h2, 0, 2)
         return
     end
 
