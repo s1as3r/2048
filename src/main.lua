@@ -15,6 +15,7 @@ end
 
 local function drawBoard()
     local width, height = love.graphics.getDimensions()
+    height = height - SCORE_SCREEN_FRAC * height
     local x4 = math.floor(width / COLS)
     local y4 = math.floor(height / ROWS)
 
@@ -31,9 +32,9 @@ end
 
 local function drawCells()
     local width, height = love.graphics.getDimensions()
+    height = height - SCORE_SCREEN_FRAC * height
     local x4 = math.floor(width / COLS)
     local y4 = math.floor(height / ROWS)
-
 
     local offsetXBase = math.floor(x4 / 2)
     local offsetY = math.floor(y4 / 2) - F_HEIGHT / 2
@@ -80,6 +81,17 @@ local function spawnCell()
 
     local i, j = emptyCells[pick][1], emptyCells[pick][2]
     GAME_STATE.cells[i][j] = START_SCORE_CHOICES[math.random(#START_SCORE_CHOICES)]
+end
+
+local function drawGameState()
+    drawBoard()
+    drawCells()
+
+    local width, height = love.graphics.getDimensions()
+    local scoreString = string.format("score: %d", GAME_STATE.score)
+    local y = height - SCORE_SCREEN_FRAC * height
+    local x = (width / 2) - love.graphics.getFont():getWidth(scoreString)
+    love.graphics.print(scoreString, x, y, 0, 2)
 end
 
 local function restartGame()
@@ -133,6 +145,7 @@ function love.load()
     COLOR_SHADER:send("scale", { 0, 1, 1, 1 })
 
     love.window.setTitle("2048")
+    SCORE_SCREEN_FRAC = .05
     START_SCORE_CHOICES = { 2, 2, 2, 4 }
     ROWS = 4
     COLS = 4
@@ -218,7 +231,5 @@ function love.draw()
         return
     end
 
-
-    drawBoard()
-    drawCells()
+    drawGameState()
 end
